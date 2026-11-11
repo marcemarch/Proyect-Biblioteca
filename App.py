@@ -52,7 +52,7 @@ def registrar_libro():
     titulo = datos.get('titulo')
     autor = datos.get('autor')
     stock = datos.get('stock')
-
+    
     cursor = mysql.connection.cursor()
     sql = "INSERT INTO libros (titulo, autor, stock) VALUES (%s, %s, %s)"
     cursor.execute(sql, (titulo, autor, stock))
@@ -60,7 +60,49 @@ def registrar_libro():
     cursor.close()
 
     return jsonify({"mensaje":"Libro registrado"}),201
-    
+
+# PUT modificaar un libro con id
+# PUT /api/libros/<id>
+@app.route('/api/libros/<int:id>', methods = ['PUT'])
+def modificar_libro(id):
+    datos = request.get_json(silent=True)
+
+    titulo = datos.get('titulo')
+    autor = datos.get('autor')
+    stock = datos.get('stock')
+
+    cursor = mysql.connection.cursor()
+    sql = "UPDATE libros SET titulo = %s, autor = %s, stock = %s WHERE id = %s"
+    cursor.execute(sql, (titulo, autor, stock, id))
+    mysql.connection.commit()
+    cursor.close()
+
+    return jsonify({"mensaje": "libro modificado", "id": id}),200
+
+# DELETE elimina un libro con id
+# DELETE /api/libros/id
+@app.route('/api/libros/<int:id>', methods = ['DELETE'])
+def eliminar_libro(id):
+    #verificar si el libro tiene prestamos
+    #sql = "SELECT count(*) as total FROM prestamos WHERE libro_id = %s"
+    cursor = mysql.connection.cursor()
+    #cursor.execute(sql, (id,))
+
+    #resultado = cursor.fetchone()
+    #if resultado['total'] > 0:
+    #    return jsonify({"error": "no se puede eliminar el libro"}),400
+
+    sql = "DELETE FROM libros WHERE id = %s"
+    cursor.execute(sql, (id,))
+    mysql.connection.commit()
+    cursor.close()
+    return jsonify({"mensaje": "Libro eliminado", "id":id}),200
+
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)    

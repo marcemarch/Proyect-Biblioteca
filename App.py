@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_mysqldb import MySQL
 
 load_dotenv(override=True)
@@ -20,6 +20,15 @@ mysql = MySQL(app)
 def inicio():
     #return f"Conexion  BD biblioteca funcionando!!!!"
     return jsonify({"mensaje":"API Biblioteca funcionando"})
+
+@app.route('/libros')
+def listado_libros():
+    return render_template("libros.html")
+
+@app.route('/prestamos')
+def listado_de_prestamos():
+    return render_template("Lista-prestamos.html")
+
 
 # GET /api/libros/
 @app.route('/api/libros/', methods = ['GET'])
@@ -98,8 +107,85 @@ def eliminar_libro(id):
     cursor.close()
     return jsonify({"mensaje": "Libro eliminado", "id":id}),200
 
+# GET /api/prestamos/
+@app.route('/api/prestamos', methods=['GET'])
+def listar_prestamos():
+    cursor = mysql.connection.cursor()
+    #sql = "SELECT * FROM prestamos"
+    sql = """SELECT p.id, p.libro_id, l.titulo AS libro, p.estudiante, p.fecha_prestamo, p.estado, p.fecha_devolucion
+             FROM prestamos p
+             INNER JOIN libros l ON l.id = p.libro_id
+             ORDER BY p.id"""
+    datos = cursor.execute(sql)
+    prestamos = cursor.fetchall()
+    return jsonify(prestamos)
 
 
+#POST /api/prestamos
+@app.route('/api/prestamos', methods=['POST'])
+def registrar_prestamo():
+    datos = request.get_json(silent=True)
+    libro_id = datos.get('libro_id')
+    estudiante = datos.get('estudiante')
+
+    cursor = mysql.connection.cursor()
+
+    sql = "SELECT stock FROM libros WHERE id = %s FOR UPDATE"
+    cursor.execute(sql,(libro_id,))
+    libro = cursor.fetchone()
+
+    if libro['stock'] <= 0:
+        mysql.connection.rollback()
+        return jsonify({"error":"No hay ejemplares"}),409
+
+    sql = "UPDATE libros SET stock = stock - 1  WHERE id = %s AND stock > 0"
+    cursor.execute(sql,(libro_id,))
+
+    sql = "INSERT INTO prestamos (libro_id, estudiante) VALUES (%s, %s)"
+    cursor.execute(sql,(libro_id,estudiante))
+
+    mysql.connection.commit()
+    cursor.close()
+
+    return jsonify({"mensaje":"Prestamo registrado"}),201
+
+# PATCH /api/prestamos/<id>
+@app.route('/api/prestamos/<int:id>', methods = ['PATCH'])
+def devolver_prestamos(id):
+    #datos = request.get_json(silent=True)
+    cursor = mysql.connection.cursor();
+
+    sql="SELECT libro_id FROM prestamos WHERE id = %s"
+    cursor.execute(sql,(id,))
+    prestamo_inicial = cursor.fetchone()
+    libro_id = prestamo_inicial['libro_id']
+
+    sql = "SELECT id FROM libros WHERE id = %s FOR UPDATE"
+    cursor.execute(sql,(libro_id,))
+
+    sql = "SELECT estado FROM prestamos WHERE id = %s FOR UPDATE"
+    cursor.execute(sql,(id,))
+
+    prestamo = cursor.fetchone()
+
+    if prestamo['estado'] == 'devuelto':
+        mysql.connection.rollback()
+        return jsonify({"error":"Pretamos ya devuelto"}),409
+
+    sql = "UPDATE prestamos SET estado = 'devuelto', fecha_devolucion = NOW() WHERE id = %s "
+    cursor.execute(sql, (id,))
+
+    sql = "UPDATE libros SET stock = stock + 1 WHERE id = %s"
+    cursor.execute(sql,(libro_id,))
+    mysql.connection.commit()
+    cursor.close()
+
+    return jsonify({"mensaje":"Devolucion registrada correctamente", "id":id}),200 
+
+
+@app.route('/biblioteca')
+def pagina_biblioteca():
+    return render_template('biblioteca.html')
 
 
 

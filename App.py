@@ -22,8 +22,21 @@ def inicio():
     return jsonify({"mensaje":"API Biblioteca funcionando"})
 
 @app.route('/libros')
-def listado_libros():
-    return render_template("libros.html")
+def lista_de_libros():
+    return render_template("lista_libros.html")
+
+@app.route('/registrar-libro')
+def registro_de_libros():
+    return render_template("registrar_libro.html")
+
+@app.route('/buscar-libro')
+def buscar_libro():
+    return render_template("buscar_libro.html")
+
+@app.route('/modificar-libro/<int:id>')
+def pagina_modificar_libro(id):
+    return render_template("modificar_libro.html",id=id)
+
 
 @app.route('/prestamos')
 def listado_de_prestamos():
@@ -50,7 +63,7 @@ def listar_libro(id):
     cursor.close()
 
     if libro is None:
-        return jsonify({"error": "Libro no encoentrado"}), 404
+        return jsonify({"error": "Libro no encontrado"}), 404
     return jsonify(libro)
 
 # POST /api/libros   para registrar un libro
@@ -93,13 +106,13 @@ def modificar_libro(id):
 @app.route('/api/libros/<int:id>', methods = ['DELETE'])
 def eliminar_libro(id):
     #verificar si el libro tiene prestamos
-    #sql = "SELECT count(*) as total FROM prestamos WHERE libro_id = %s"
+    sql = "SELECT count(*) as total FROM prestamos WHERE libro_id = %s"
     cursor = mysql.connection.cursor()
-    #cursor.execute(sql, (id,))
+    cursor.execute(sql, (id,))
 
-    #resultado = cursor.fetchone()
-    #if resultado['total'] > 0:
-    #    return jsonify({"error": "no se puede eliminar el libro"}),400
+    resultado = cursor.fetchone()
+    if resultado['total'] > 0:
+        return jsonify({"error": "no se puede eliminar el libro"}),400
 
     sql = "DELETE FROM libros WHERE id = %s"
     cursor.execute(sql, (id,))
@@ -185,7 +198,7 @@ def devolver_prestamos(id):
 
 @app.route('/biblioteca')
 def pagina_biblioteca():
-    return render_template('biblioteca.html')
+    return render_template('prestamo.html')
 
 
 

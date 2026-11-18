@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+<h2>Modificar libro</h2>
+
+<label>ID:</label>
+<input type="number" id="editarId" value="{{ id }}" readonly>
+<br><br>
+
+<label>Título:</label>
+<input type="text" id="editarTitulo">
+<br><br>
+
+<label>Autor:</label>
+<input type="text" id="editarAutor">
+<br><br>
+
+<label>Stock:</label>
+<input type="number" id="editarStock" min="0">
+<br><br>
+
+<button onclick="modificarLibro()">Guardar cambios</button>
+
+<a href="/libros">Volver al listado</a>
+
+<script src="{{ url_for('static', filename='biblioteca.js') }}"></script>
+
+<script>
+    cargarLibroEditar();
+</script>
+
+</body>
+</html>

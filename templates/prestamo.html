@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca - Gestión de préstamos</title>
+    <script src="{{ url_for('static', filename='biblioteca.js') }}" defer></script>
+</head>
+<body>
+<main>
+    <h1>Biblioteca</h1>
+    <p class="subtitulo">Registro y devolución de préstamos</p>
+
+    <section>
+        <h2>Nuevo préstamo</h2>
+        <form id="formPrestamo">
+            <label for="libro">Libro disponible</label>
+            <select id="libro" required>
+                <option value="">Cargando libros...</option>
+            </select>
+
+            <label for="estudiante">Nombre del estudiante</label>
+            <input id="estudiante" type="text" maxlength="100" required
+                   placeholder="Ej. María Quispe">
+
+            <button id="btnRegistrar" type="submit">Registrar préstamo</button>
+        </form>
+    </section>
+
+    <p id="mensaje" role="status" aria-live="polite"></p>
+
+    <section>
+        <h2>Préstamos pendientes</h2>
+        <div class="tabla">
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Libro</th><th>Estudiante</th><th>Acción</th></tr>
+                </thead>
+                <tbody id="tablaPrestamos"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

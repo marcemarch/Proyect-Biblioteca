@@ -3,15 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>Document</title>
 </head>
 <body>
-    <h1>Lista de Libros Prestados</h1>
+    
+<h2>Buscar libro por ID</h2>
 
-<ol id="listaItems">
+<label>ID del libro:</label>
+<input type="number" id="idBuscar" min="1">
 
-</ol>
+<button onclick="buscarLibro()">Buscar libro</button>
+
+<h3>Resultado de la búsqueda</h3>
+
+<p id="resultadoBusqueda"></p>
+
 <script src="/static/biblioteca.js"></script>
 </body>
 </html>
